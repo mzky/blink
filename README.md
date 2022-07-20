@@ -17,12 +17,11 @@
 - [ ] 自定义dll,而不是使用内嵌的dll(防止更新不及时)
 - [ ] golang调用js方法时的异步.
 - [ ] dll的内存加载, 尝试过基于MemoryModule的方案, 没有成功, 目前是释放dll到临时目录, 再加载.
-- [ ] <b>使用go:embed代替go-bindata</b>
 - [ ] 还有很多...
 
 ## 安装
 ```bash
-go get github.com/raintean/blink
+go get github.com/mzky/blink
 ```
 
 ## 示例
@@ -30,40 +29,90 @@ go get github.com/raintean/blink
 package main
 
 import (
+	"embed"
+	"github.com/gin-gonic/gin"
 	"github.com/mzky/blink"
-	"github.com/elazarl/go-bindata-assetfs"
+	"io/fs"
 	"log"
+	"net"
+	"net/http"
+	"pcmClient/utils"
+	"strconv"
+	"time"
 )
 
+//go:embed res
+var res embed.FS
+
+var (
+	c       utils.CorsVar
+	mainForm *blink.WebView
+)
+
+/*
+减肥并隐藏控制台
+go build -ldflags "-w -s -H=windowsgui"
+debug模式，F12可以调出开发者工具
+go build -ldflags "-w -s -H=windowsgui" -tags="bdebug"
+*/
 func main() {
-	//设置调试模式
-	blink.SetDebugMode(true)
-
-	//初始化blink模块
-	err := blink.InitBlink()
+	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
+	defer listener.Close()
 
-	//注册虚拟网络文件系统到域名app
-	blink.RegisterFileSystem("app", &assetfs.AssetFS{
-		Asset:     bin.Asset,
-		AssetDir:  bin.AssetDir,
-		AssetInfo: bin.AssetInfo,
-	})
+	c.LocalPort = strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
+	c.SrvPort = ":7569"
 
-	//新建view,加载URL
-	view := blink.NewWebView(false, 1366, 920)
-	//直接加载虚拟文件系统中的网页
-	view.LoadURL("http://app/index.html")
-	view.SetWindowTitle("Golang GUI Application")
-	view.MoveToCenter()
-	view.ShowWindow()
-	view.ShowDevTools()
+	r := gin.Default()
+	//gin.SetMode(gin.ReleaseMode)
+	r.Any("/kerb/*path", c.PublicProxy)
+	r.GET("/health", c.Health)
+	r.POST("/exit", c.Exit)
+	r.POST("/setAddress", c.SetAddress)
 
-	<-make(chan bool)
+	fRes, err := fs.Sub(res, "res") // 必须
+	if err != nil {
+		panic(err)
+	}
+	r.StaticFS("/web", http.FS(fRes))
+	go r.Run(":" + c.LocalPort)
 	
+	if mainForm == nil {
+		// 是否支持F5和F12调试模式
+		// blink.SetDebugMode(false)
+		err := blink.InitBlink()
+		if err != nil {
+			log.Fatal(err)
+		}
+		<-time.After(time.Second)
+		mainForm = blink.NewWebView(false, 1280, 800)
+
+		mainForm.LoadURL("http://127.0.0.1:" + c.LocalPort + "/web/login.html")
+		// 设置窗体标题
+		mainForm.SetWindowTitle("升级维护客户端v1.3.1")
+		mainForm.DisableAutoTitle()
+
+		icoByte, _ := res.ReadFile("res/gear22.ico")
+		mainForm.SetWindowIconFromBytes(icoByte)
+		// 移动到屏幕中心位置
+		mainForm.MoveToCenter()
+		mainForm.ShowWindow()
+
+		//当窗口被销毁的时候,变量=nil
+		mainForm.On("destroy", func(_ *blink.WebView) {
+			mainForm = nil
+		})
+		<-make(chan bool)
+	} else {
+		//窗口实例存在,则提到前台
+		mainForm.ToTop()
+		mainForm.RestoreWindow()
+		mainForm.ShowWindow()
+	}
 }
+
 ```
 
 ## golang和js交互

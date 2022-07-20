@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/lxn/win"
-	"github.com/raintean/blink/internal/devtools"
-	"github.com/raintean/blink/internal/dll"
+	"github.com/mzky/blink/internal/devtools"
+	"github.com/mzky/blink/internal/dll"
 	"io/ioutil"
 	"path/filepath"
 	"runtime"
@@ -29,8 +29,10 @@ func InitBlink() error {
 	if err != nil {
 		return fmt.Errorf("创建临时文件失败: %+v", err)
 	}
-	ioutil.WriteFile(tmpFile.Name(), dllByte, 755)
 	dllPath := tmpFile.Name()
+	if err := ioutil.WriteFile(dllPath, dllByte, 755); err != nil {
+		return fmt.Errorf("解出dll文件失败: %+v", err)
+	}
 	// 这里不能用defer
 	tmpFile.Close()
 
