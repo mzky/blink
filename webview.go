@@ -293,5 +293,5 @@ func _TEXT(str string) *uint16 {
 }
 
 func (view *WebView) MessageBox(caption, text string) {
-	win.MessageBox(view.handle, _TEXT(text), _TEXT(caption), win.MB_ICONERROR)
+	win.MessageBox(view.handle, _TEXT(text), _TEXT(caption), win.MB_ICONWARNING)
 }
