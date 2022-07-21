@@ -25,7 +25,7 @@ func InitBlink() error {
 		return fmt.Errorf("找不到内嵌dll,err: %+v", err)
 	}
 
-	tmpFile, err := ioutil.TempFile(TempPath, "blink_"+runtime.GOARCH+"_*.dll")
+	tmpFile, err := ioutil.TempFile(TempPath, "blink_*.dll")
 	if err != nil {
 		return fmt.Errorf("创建临时文件失败: %+v", err)
 	}

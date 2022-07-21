@@ -5,6 +5,7 @@ import "C"
 import (
 	"github.com/CHH/eventemitter"
 	"github.com/lxn/win"
+	"syscall"
 	"unsafe"
 )
 
@@ -284,4 +285,13 @@ func (view *WebView) DestroyWindow() {
 		}
 		<-done
 	}
+}
+
+func _TEXT(str string) *uint16 {
+	ptr, _ := syscall.UTF16PtrFromString(str)
+	return ptr
+}
+
+func (view *WebView) MessageBox(caption, text string) {
+	win.MessageBox(view.handle, _TEXT(text), _TEXT(caption), win.MB_ICONERROR)
 }

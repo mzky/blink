@@ -1,5 +1,12 @@
 # blink
-使用html来编写golang的GUI程序(only windows), 基于[miniblink开源库](https://github.com/weolar/miniblink49)  
+- fork自https://github.com/raintean/blink
+- 使用html来编写golang的GUI程序(only windows), 基于[miniblink开源库](https://github.com/weolar/miniblink49)  
+
+## 变更部分 (This)
+- dll释放时通过ioutil.TempFile随机命名(以blink_开头)
+- dll更新到20220405
+- 更新示例，go:embed方式打包web页面，gin框架使用
+- 增加弹窗接口MessageBox(标题，内容)
 
 ## Demo
 [Demo项目地址](https://github.com/raintean/blink-demo)
