@@ -8,6 +8,7 @@
 - 更新示例，go:embed方式打包web页面，gin框架使用
 - 增加弹窗接口MessageBox(标题，内容)
 - 增加单实例锁、查找并置顶窗口等
+- dll做upx压缩，dll打包的代码，用go:embed替代（32位没有环境试）
 
 ## Demo
 [Demo项目地址](https://github.com/raintean/blink-demo)

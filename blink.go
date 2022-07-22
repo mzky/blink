@@ -4,25 +4,32 @@ package blink
 import "C"
 
 import (
+	_ "embed"
 	"fmt"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/lxn/win"
 	"github.com/mzky/blink/internal/devtools"
-	"github.com/mzky/blink/internal/dll"
 	"io/ioutil"
 	"path/filepath"
 	"runtime"
+	"unsafe"
 )
 
 //任务队列,保证所有的API调用都在痛一个线程
 var jobQueue = make(chan func())
 
-//初始化blink,释放并加载dll,启动调用队列
+//go:embed internal/dll/blink32.dll
+var blink32 []byte
+
+//go:embed internal/dll/blink64.dll
+var blink64 []byte
+
+// InitBlink 初始化blink,释放并加载dll,启动调用队列
 func InitBlink() error {
 	//准备释放dll到临时目录
-	dllByte, err := dll.Asset("blink.dll")
-	if err != nil {
-		return fmt.Errorf("找不到内嵌dll,err: %+v", err)
+	dllByte := blink32
+	if unsafe.Sizeof(uintptr(0)) == 8 {
+		dllByte = blink64
 	}
 
 	tmpFile, err := ioutil.TempFile(TempPath, "blink_*.dll")
