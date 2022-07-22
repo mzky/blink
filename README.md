@@ -36,15 +36,15 @@ go get github.com/mzky/blink
 package main
 
 import (
+	"context"
 	"embed"
 	"github.com/gin-gonic/gin"
 	"github.com/mzky/blink"
 	"io/fs"
 	"log"
-	"net"
 	"net/http"
+	"os"
 	"pcmClient/utils"
-	"strconv"
 	"time"
 )
 
@@ -52,26 +52,66 @@ import (
 var res embed.FS
 
 var (
-	c       utils.CorsVar
-	mainForm *blink.WebView
+	c           utils.CorsAddr
+	winForm     *blink.WebView
+	windowTitle = "升级维护客户端v1.3.1"
 )
 
-/*
-减肥并隐藏控制台
-go build -ldflags "-w -s -H=windowsgui"
-debug模式，F12可以调出开发者工具
-go build -ldflags "-w -s -H=windowsgui" -tags="bdebug"
-*/
-func main() {
-	listener, err := net.Listen("tcp", ":0")
-	if err != nil {
-		panic(err)
+func init() {
+	c.Port = ":7569"
+	// 是否支持F5和F12调试模式
+	// blink.SetDebugMode(false)
+	if err := blink.InitBlink(); err != nil {
+		log.Fatal(err)
 	}
-	defer listener.Close()
+	winForm = blink.NewWebView(false, 1280, 800)
+	if err := winForm.LockMutex("PCM_Client"); err != nil {
+		winForm.MessageBox("消息", "同时只能运行一个升级维护客户端！")
+		winForm.FindWindowToTop(windowTitle)
+		<-time.After(time.Second)
+		log.Fatalf("客户端已经运行 %+v", err)
+	}
+}
 
-	c.LocalPort = strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
-	c.SrvPort = ":7569"
+func main() {
+	srv := &http.Server{Addr: c.Port, Handler: initHandler()}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			winForm.MessageBox("消息", "本地7569端口被占用，关闭占用7569端口程序后重试")
+			log.Fatalf("端口被占用:%+v", err)
+		}
+	}()
 
+	<-time.After(time.Second)
+	winForm.LoadURL("http://127.0.0.1" + c.Port + "/web/login.html")
+	// 设置窗体标题
+	winForm.SetWindowTitle(windowTitle)
+	winForm.DisableAutoTitle()
+
+	icoByte, _ := res.ReadFile("res/gear22.ico")
+	winForm.SetWindowIconFromBytes(icoByte)
+	// 移动到屏幕中心位置
+	winForm.MoveToCenter()
+	winForm.ShowWindow()
+	winForm.ToTop()
+
+	//当窗口被销毁的时候,变量=nil
+	winForm.On("destroy", func(_ *blink.WebView) {
+		winForm = nil
+		log.Println("Shutdown Service ...")
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		// 关闭时退出httpserver，否则进程一直还在
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Fatal("Server Shutdown:", err)
+		}
+		os.Exit(0)
+	})
+	<-make(chan bool)
+
+}
+
+func initHandler() *gin.Engine {
 	r := gin.Default()
 	//gin.SetMode(gin.ReleaseMode)
 	r.Any("/kerb/*path", c.PublicProxy)
@@ -84,42 +124,16 @@ func main() {
 		panic(err)
 	}
 	r.StaticFS("/web", http.FS(fRes))
-	go r.Run(":" + c.LocalPort)
-	
-	if mainForm == nil {
-		// 是否支持F5和F12调试模式
-		// blink.SetDebugMode(false)
-		err := blink.InitBlink()
-		if err != nil {
-			log.Fatal(err)
-		}
-		<-time.After(time.Second)
-		mainForm = blink.NewWebView(false, 1280, 800)
 
-		mainForm.LoadURL("http://127.0.0.1:" + c.LocalPort + "/web/login.html")
-		// 设置窗体标题
-		mainForm.SetWindowTitle("升级维护客户端v1.3.1")
-		mainForm.DisableAutoTitle()
-
-		icoByte, _ := res.ReadFile("res/gear22.ico")
-		mainForm.SetWindowIconFromBytes(icoByte)
-		// 移动到屏幕中心位置
-		mainForm.MoveToCenter()
-		mainForm.ShowWindow()
-
-		//当窗口被销毁的时候,变量=nil
-		mainForm.On("destroy", func(_ *blink.WebView) {
-			mainForm = nil
-		})
-		<-make(chan bool)
-	} else {
-		//窗口实例存在,则提到前台
-		mainForm.ToTop()
-		mainForm.RestoreWindow()
-		mainForm.ShowWindow()
-	}
+	return r
 }
 
+/*
+-- 减肥并隐藏控制台
+go build -ldflags "-w -s -H=windowsgui"
+-- debug模式，F12可以调出开发者工具
+go build -ldflags "-w -s -H=windowsgui" -tags="bdebug"
+*/
 ```
 
 ## golang和js交互
