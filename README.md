@@ -13,7 +13,6 @@
 [Demo项目地址](https://github.com/raintean/blink-demo)
 
 ## 特性
----
 - [x] 一个可执行文件, miniblink的dll被嵌入库中
 - [x] 生成的可执行文件灰常小
 - [x] 支持无缝golang和浏览器页面js的交互 (Date类型都做了处理), 并支持异步调用golang中的方法(Promise), 支持异常获取.

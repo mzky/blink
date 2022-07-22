@@ -316,5 +316,7 @@ func (view *WebView) FindWindowToTop(windowTitle string) {
 	view.handle = win.FindWindow(StringToUint16("wkeWebWindow"), StringToUint16(windowTitle))
 	view.MoveToCenter()
 	view.RestoreWindow()
+	view.MostTop(true)
+	view.MostTop(false) // 需要加这句，否则一直置顶，无法切换到其它程序
 	view.ToTop()
 }
