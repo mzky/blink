@@ -7,6 +7,7 @@
 - dll更新到20220405
 - 更新示例，go:embed方式打包web页面，gin框架使用
 - 增加弹窗接口MessageBox(标题，内容)
+- 增加单实例锁、查找并置顶窗口等
 
 ## Demo
 [Demo项目地址](https://github.com/raintean/blink-demo)

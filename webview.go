@@ -5,6 +5,7 @@ import "C"
 import (
 	"github.com/CHH/eventemitter"
 	"github.com/lxn/win"
+	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
 )
@@ -294,4 +295,26 @@ func _TEXT(str string) *uint16 {
 
 func (view *WebView) MessageBox(caption, text string) {
 	win.MessageBox(view.handle, _TEXT(text), _TEXT(caption), win.MB_ICONWARNING)
+}
+
+func StringToUint16(name string) *uint16 {
+	ptr, _ := syscall.UTF16PtrFromString(name)
+	return ptr
+}
+
+// LockMutex windows下单实例锁
+func (view *WebView) LockMutex(name string) error {
+	_, err := windows.CreateMutex(nil, true, StringToUint16(name))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// FindWindowToTop 查找窗口并显示到最上层，参数为窗口标题，可能需要禁用自动窗口标题，DisableAutoTitle()后SetWindowTitle(windowTitle)
+func (view *WebView) FindWindowToTop(windowTitle string) {
+	view.handle = win.FindWindow(StringToUint16("wkeWebWindow"), StringToUint16(windowTitle))
+	view.MoveToCenter()
+	view.RestoreWindow()
+	view.ToTop()
 }
