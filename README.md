@@ -9,6 +9,7 @@
 - 增加弹窗接口MessageBox(标题，内容)
 - 增加单实例锁、查找并置顶窗口等
 - dll做upx压缩，dll打包的代码，用go:embed替代（32位没有环境试）
+- 此库对页面下载没有响应，需要下载功能可切换到https://github.com/mzky/goblink（这个变量命名让人沉醉，我正视图改进）
 
 ## Demo
 [Demo项目地址](https://github.com/raintean/blink-demo)
