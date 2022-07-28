@@ -1,6 +1,7 @@
 # blink
 - fork自https://github.com/raintean/blink
 - 使用html来编写golang的GUI程序(only windows), 基于[miniblink开源库](https://github.com/weolar/miniblink49)  
+- 依赖cgo
 
 ## 变更部分 (This)
 - dll释放时通过ioutil.TempFile随机命名(以blink_开头)
