@@ -4,7 +4,7 @@
 - 依赖cgo
 
 ## 变更部分 (This)
-- dll释放时通过ioutil.TempFile随机命名(以blink_开头)
+- dll释放时通过os.CreateTemp随机命名(以blink_开头)
 - dll更新到20220405
 - 更新示例，go:embed方式打包web页面，gin框架使用
 - 增加弹窗接口MessageBox(标题，内容)
