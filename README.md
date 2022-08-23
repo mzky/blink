@@ -45,7 +45,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"pcmClient/utils"
+	//replace (
+	//	github.com/mzky/blink => blink
+	//)
+
 	"time"
 )
 
@@ -53,13 +56,12 @@ import (
 var res embed.FS
 
 var (
-	c           utils.CorsAddr
 	winForm     *blink.WebView
-	windowTitle = "升级维护客户端v1.3.1"
+	windowTitle = "blink_example"
+	port        = ":7569"
 )
 
 func init() {
-	c.Port = ":7569"
 	// 是否支持F5和F12调试模式
 	// blink.SetDebugMode(false)
 	if err := blink.InitBlink(); err != nil {
@@ -75,7 +77,7 @@ func init() {
 }
 
 func main() {
-	srv := &http.Server{Addr: c.Port, Handler: initHandler()}
+	srv := &http.Server{Addr: port, Handler: initHandler()}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			winForm.MessageBox("消息", "本地7569端口被占用，关闭占用7569端口程序后重试")
@@ -84,7 +86,7 @@ func main() {
 	}()
 
 	<-time.After(time.Second)
-	winForm.LoadURL("http://127.0.0.1" + c.Port + "/web/login.html")
+	winForm.LoadURL("http://127.0.0.1" + port + "/web/login.html")
 	// 设置窗体标题
 	winForm.SetWindowTitle(windowTitle)
 	winForm.DisableAutoTitle()
@@ -115,10 +117,6 @@ func main() {
 func initHandler() *gin.Engine {
 	r := gin.Default()
 	//gin.SetMode(gin.ReleaseMode)
-	r.Any("/kerb/*path", c.PublicProxy)
-	r.GET("/health", c.Health)
-	r.POST("/exit", c.Exit)
-	r.POST("/setAddress", c.SetAddress)
 
 	fRes, err := fs.Sub(res, "res") // 必须
 	if err != nil {
