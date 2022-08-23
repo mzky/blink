@@ -5,12 +5,10 @@
 vendor
 go.sum
 
-# bin data
-*bin.go
-
 # execute
-example.exe
+*.exe
 
 # other
 LocalStorage/
 blink/.vscode/
+
