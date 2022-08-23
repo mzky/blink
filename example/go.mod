@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.1
-	github.com/mzky/blink v0.0.0-20220823075434-350a436d3a35
+	github.com/mzky/blink v0.0.0-20220823075816-85dd514649ad
 )
 
 require (
@@ -32,6 +32,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-//replace (
-//	github.com/mzky/blink => c:\Users\mzky\go\src\blink
-//)
+replace github.com/mzky/blink => c:\Users\mzky\go\src\blink

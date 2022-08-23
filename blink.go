@@ -43,7 +43,8 @@ func InitBlink() error {
 	}
 	// 这里不能用defer
 	tmpFile.Close()
-
+	// 删除旧的dll
+	go os.RemoveAll(TempPath)
 	// 启动一个新的协程来处理blink的API调用
 	go func() {
 		// 将这个协程锁在当前的线程上
