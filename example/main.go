@@ -9,10 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	//replace (
-	//	github.com/mzky/blink => blink
-	//)
-
 	"time"
 )
 

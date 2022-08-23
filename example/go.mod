@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.1
-	github.com/mzky/blink v0.0.0-20220728010653-80048fea62e4
+	github.com/mzky/blink v0.0.0-20220823075434-350a436d3a35
 )
 
 require (
